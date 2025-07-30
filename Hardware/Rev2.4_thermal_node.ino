@@ -17,6 +17,10 @@
 #include <esp_now.h>
 using namespace std;
 
+#include <FastLED.h>
+#define NUM_LEDS 3
+CRGBArray<NUM_LEDS> leds;
+
 // constants won't change. They're used here to set pin numbers:
 const int buttonPin = 39;  // the number of the pushbutton pin
 const int ledPin = LED_BUILTIN;    // the number of the LED pin
@@ -25,7 +29,7 @@ const int ledPin = LED_BUILTIN;    // the number of the LED pin
 int buttonState = 0;  // variable for reading the pushbutton status
 
 // REPLACE WITH THE RECEIVER'S MAC Address
-uint8_t broadcastAddress[] = {0x5C, 0x01, 0x3B, 0x6F, 0xA3, 0x64};
+uint8_t broadcastAddress[] = {0x14, 0x2B, 0x2F, 0xB8, 0xCC, 0x9C};
 
 // Structure example to send data
 // Must match the receiver structure
@@ -243,6 +247,13 @@ void updateHeatmap(const float (&background_median)[HEIGHT][WIDTH]);
 vector<pair<int, int>> findComponentCenters(const float (&thresholdData)[HEIGHT][WIDTH]);
 void dfs(const int x, const int y, const float (&thresholdData)[HEIGHT][WIDTH], bool (&visited)[HEIGHT][WIDTH], vector<pair<int, int> > &component);
 void applyBackgroundSubtraction(const float (&background)[HEIGHT][WIDTH], const float (&input)[HEIGHT][WIDTH], float (&output)[HEIGHT][WIDTH]);
+void led_set(uint8_t hue) {
+  leds[0] = CHSV(hue,255,255);
+  leds[1] = CHSV(hue,255,255);
+  leds[2] = CHSV(hue,255,255);
+}
+
+uint8_t hue = 0;
 
 void setup()
 {
@@ -250,7 +261,15 @@ void setup()
   pinMode(buttonPin, INPUT);
   buttonState = digitalRead(buttonPin);
   // Connect to WiFi network
+  FastLED.addLeds<NEOPIXEL,2>(leds, NUM_LEDS);
+  FastLED.setBrightness(255);
+
+
   if (buttonState == HIGH) {
+    led_set(10);
+    FastLED.show();
+    FastLED.delay(1000);
+
     WiFi.begin(ssid, password);
     Serial.println("");
 
@@ -308,6 +327,9 @@ void setup()
     });
     server.begin();
   } else {
+    led_set(150);
+    FastLED.show();
+    FastLED.delay(1000);
     WiFi.mode(WIFI_STA);
       // Init ESP-NOW
     if (esp_now_init() != ESP_OK) {
@@ -339,6 +361,9 @@ void setup()
   Wire.begin();
   Wire.setClock(400000); //Increase I2C clock speed to 400kHz
 
+  led_set(200);
+  FastLED.show();
+  FastLED.delay(1000);
 
   if (isConnected() == false)
   {
@@ -438,6 +463,9 @@ void loop()
     if (result == ESP_OK) Serial.println("ESP-NOW sent");
     else Serial.println("ESP-NOW send failed");
   }
+  FastLED.show();
+  leds.fadeToBlackBy(1);
+  FastLED.delay(100);
 }
 
 //Returns true if the MLX90640 is detected on the I2C bus
@@ -476,7 +504,10 @@ void updateHeatmap(const float (&background_median)[HEIGHT][WIDTH]) {
           myData.coords[appDataSizewifi++] = component.second;
           appData[appDataSize++] = component.first;
           appData[appDataSize++] = component.second;
+          led_set(0);
       }
+    } else {
+      led_set(30);
     }
     Serial.println();
     centerIndexOfComponents.clear();
