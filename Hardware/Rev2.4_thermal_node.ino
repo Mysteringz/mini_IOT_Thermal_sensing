@@ -18,7 +18,7 @@
 using namespace std;
 
 #include <FastLED.h>
-#define NUM_LEDS 3
+#define NUM_LEDS 4
 CRGBArray<NUM_LEDS> leds;
 
 // constants won't change. They're used here to set pin numbers:
@@ -251,6 +251,7 @@ void led_set(uint8_t hue) {
   leds[0] = CHSV(hue,255,255);
   leds[1] = CHSV(hue,255,255);
   leds[2] = CHSV(hue,255,255);
+  leds[3] = CHSV(hue,255,255);
 }
 
 uint8_t hue = 0;
@@ -507,7 +508,7 @@ void updateHeatmap(const float (&background_median)[HEIGHT][WIDTH]) {
           led_set(0);
       }
     } else {
-      led_set(30);
+      led_set(80);
     }
     Serial.println();
     centerIndexOfComponents.clear();
