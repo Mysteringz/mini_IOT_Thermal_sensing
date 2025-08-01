@@ -2,8 +2,8 @@ Hardware Architecture: Has an esp32 as a WiFi server to remotely flash code, has
 
 Files:
 plain_thermal_node.ino for thermal detection
-NODE_update_server.ino is for updating the ESP32 WiFi server
-rgc_thermal_node.ino has thermal detection and working RGB lights
+NODE_update_server.ino is for thermal detection with update using the ESP32 WiFi server
+Rev2.4_thermal_node.ino is for thermal detection with Wi-Fi and LoRa data sending mode and ESP32 WiFi server (full feature version)
 
 Requires use of the Heltec WiFi LoRa 32(V3) board, download zip from:
 https://github.com/HelTecAutomation/Heltec_ESP32/tree/master
@@ -29,8 +29,11 @@ In sx1262-board.c:
 Required Installations from Arduino IDE:
 - U8g2
 - XPowersLib
+- MKRWAN
+- FastLED
 
-Use Tools > LoRaWAN Region > REGION_915
+Use Tools > LoRaWAN Region > REGION_US915
+If you are unable to upload the code, please try 460800 upload speed.
 
 For Innowing, use WiFi RAK7268_7ABD
 Connect to IP address: 192.168.230.1
