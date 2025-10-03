@@ -1,0 +1,15 @@
+../Src/picojpeg.c:1355:13:upsampleCb	23
+../Src/picojpeg.c:1388:13:upsampleCbH	34
+../Src/picojpeg.c:1415:13:upsampleCbV	11
+../Src/picojpeg.c:1442:13:upsampleCr	23
+../Src/picojpeg.c:1475:13:upsampleCrH	34
+../Src/picojpeg.c:1502:13:upsampleCrV	11
+../Src/picojpeg.c:243:26:getChar	4
+../Src/picojpeg.c:416:26:huffDecode	12
+../Src/picojpeg.c:277:15:getBits.constprop	5
+../Src/picojpeg.c:277:15:getBits	9
+../Src/picojpeg.c:277:15:getBits.constprop	2
+../Src/picojpeg.c:277:15:getBits.constprop	7
+../Src/picojpeg.c:744:14:processMarkers	61
+../Src/picojpeg.c:2014:15:pjpeg_decode_mcu	228
+../Src/picojpeg.c:2033:1:pjpeg_decode_init	65

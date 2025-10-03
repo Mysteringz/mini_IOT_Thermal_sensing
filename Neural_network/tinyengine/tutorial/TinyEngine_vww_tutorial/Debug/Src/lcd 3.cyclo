@@ -1,0 +1,8 @@
+../Src/lcd.cpp:26:6:void loadRGB565LCD(uint32_t, uint32_t, uint32_t, uint32_t, uint16_t*, uint8_t)	8
+../Src/lcd.cpp:42:6:void drawRedBackground(int, int, int, int)	5
+../Src/lcd.cpp:51:6:void drawGreenBackground(int, int, int, int)	5
+../Src/lcd.cpp:60:6:void drawBlueBackground(int, int, int, int)	5
+../Src/lcd.cpp:69:6:void drawBlackBackground(int, int, int, int)	5
+../Src/lcd.cpp:78:6:void displaystring(char*, int, int)	1
+../Src/lcd.cpp:86:6:void detectResponse(int, float, int, int, int)	29
+../Src/lcd.cpp:173:6:void lcdsetup()	1

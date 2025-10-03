@@ -1,0 +1,16 @@
+../Src/camera.cpp:33:6:void flush_fifo()	1
+../Src/camera.cpp:35:6:void clear_fifo_flag()	1
+../Src/camera.cpp:37:6:void start_capture()	1
+../Src/camera.cpp:39:6:void set_format(uint8_t)	1
+../Src/camera.cpp:41:5:int initCamera()	2
+../Src/camera.cpp:69:6:void OV2640_set_JPEG_size(uint8_t)	9
+../Src/camera.cpp:104:10:uint32_t read_fifo_length()	1
+../Src/camera.cpp:113:10:uint32_t getbufSize()	1
+../Src/camera.cpp:115:9:uint8_t getbufChar(int)	1
+../Src/camera.cpp:117:5:int DecodeandProcessRGB565(int, int, uint16_t*)	14
+../Src/camera.cpp:178:5:int DecodeandProcessAndRGB(int, int, int8_t*, uint16_t*, int)	16
+../Src/camera.cpp:276:5:int DecodeandProcess(int, int, uint8_t*)	10
+../Src/camera.cpp:361:5:int StartCapture()	1
+../Src/camera.cpp:384:9:uint8_t read_fifo_burst()	4
+../Src/camera.cpp:343:5:int PerformCapture()	2
+../Src/camera.cpp:373:5:int ReadCapture()	2

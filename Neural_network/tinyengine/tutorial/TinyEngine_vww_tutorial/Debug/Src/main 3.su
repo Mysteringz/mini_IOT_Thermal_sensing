@@ -1,0 +1,4 @@
+../Inc/profile.h:28:6:void printLog(const char*)	16	static
+../Inc/profile.h:49:6:void recieveChar(char*)	16	static
+../Src/main.cpp:53:6:void invoke_new_weights_givenimg(signed char*)	8	static
+../Src/main.cpp:67:5:int main()	264	static,ignoring_inline_asm

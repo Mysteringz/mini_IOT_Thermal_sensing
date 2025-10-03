@@ -1,0 +1,2 @@
+../Src/TinyEngine/codegen/Source/depthwise_kernel5x5_stride2_inplace_CHW.c:76:6:depthwise_kernel5x5_stride2_inplace_kernel_CHW	160	static
+../Src/TinyEngine/codegen/Source/depthwise_kernel5x5_stride2_inplace_CHW.c:17:19:depthwise_kernel5x5_stride2_inplace_CHW	232	static

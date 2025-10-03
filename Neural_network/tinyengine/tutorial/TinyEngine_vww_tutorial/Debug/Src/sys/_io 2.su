@@ -1,0 +1,2 @@
+../Src/sys/_io.c:23:5:__io_putchar	0	static,ignoring_inline_asm
+../Src/sys/_io.c:25:5:__io_getchar	0	static

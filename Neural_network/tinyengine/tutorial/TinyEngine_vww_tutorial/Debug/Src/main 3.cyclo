@@ -1,0 +1,4 @@
+../Inc/profile.h:28:6:void printLog(const char*)	2
+../Inc/profile.h:49:6:void recieveChar(char*)	2
+../Src/main.cpp:53:6:void invoke_new_weights_givenimg(signed char*)	1
+../Src/main.cpp:67:5:int main()	11

@@ -1,0 +1,3 @@
+../Src/TinyEngine/codegen/Source/mat_mul_kernels_fpreq.c:5:7:mat_mult_kernel_s8_s16_fpreq	5
+../Src/TinyEngine/codegen/Source/mat_mul_kernels_fpreq.c:134:7:mat_mult_kernel_s8_s16_multithread_fpreq	5
+../Src/TinyEngine/codegen/Source/mat_mul_kernels_fpreq.c:274:7:mat_mult_kernel3_input3_s8_s16_fpreq	3

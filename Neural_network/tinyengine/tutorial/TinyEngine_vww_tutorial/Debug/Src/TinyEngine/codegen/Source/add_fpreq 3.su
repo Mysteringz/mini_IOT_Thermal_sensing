@@ -1,0 +1,3 @@
+../Src/TinyEngine/codegen/Source/add_fpreq.c:23:19:add_fpreq	64	static
+../Src/TinyEngine/codegen/Source/add_fpreq.c:38:19:add_fpreq_mask	72	static
+../Src/TinyEngine/codegen/Source/add_fpreq.c:60:19:add_fpreq_bitmask	96	static
