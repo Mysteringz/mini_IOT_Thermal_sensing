@@ -1,0 +1,57 @@
+this is my current architecture: # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
+# Parameters
+nc: 1 # number of classes
+depth_multiple: 0.17 # model depth multiple
+width_multiple: 0.25 # layer channel multiple
+activation: nn.ReLU()
+anchors:
+  - [2, 3, 4, 5, 6, 7]     # P3/8  (4x4)
+  - [8, 6, 10, 10, 12, 8]  # P4/16 (2x2)
+  - [14, 12, 16, 16, 20, 18] # P5/32 (1x1)
+
+# YOLOv5 v6.0 backbone
+backbone:
+  # [from, number, module, args]
+  [ 
+    [-1, 1, Conv, [16, 3, 2]],        # 0: Conv 3x3 s2 -> 16      (16x16)
+    [-1, 1, DWConv, [16, 3, 1]],      # 1: DWConv 3x3 s1 -> 16    
+
+    # stage 1
+    [-1, 1, Conv, [32, 1, 1]],        # 2: 1x1 Conv -> 32
+    [-1, 1, DWConv, [32, 3, 2]],      # 3: DWConv 3x3 s2 -> 32    (8x8)
+    [-1, 1, Conv, [64, 1, 1]],        # 4: 1x1 Conv -> 64
+
+    # stage 2
+    [-1, 1, Conv, [64, 1, 1]],        # 5: 1x1 Conv -> 64
+    [-1, 1, DWConv, [64, 3, 2]],      # 6: DWConv 3x3 s2 -> 64    (4x4)
+    [-1, 1, Conv, [128, 1, 1]],       # 7: 1x1 Conv -> 128
+
+    # stage 3
+    [-1, 1, Conv, [128, 1, 1]],       # 8: 1x1 Conv -> 128
+    [-1, 1, DWConv, [128, 3, 2]],     # 9: DWConv 3x3 s2 -> 128   (2x2)
+    [-1, 1, Conv, [256, 1, 1]],       # 10: 1x1 Conv -> 256
+
+    # stage 4
+    [-1, 1, Conv, [256, 1, 1]],       # 11: 1x1 Conv -> 256
+    [-1, 1, DWConv, [256, 3, 2]],     # 12: DWConv 3x3 s2 -> 256   (1x1)
+    [-1, 1, Conv, [256, 1, 1]]        # 13: 1x1 Conv -> 256
+  ]
+
+
+head:
+  [
+    [7, 1, Conv, [128, 1, 1]],          # from C2 → reduce channels
+    [-1, 1, DWConv, [128, 3, 1]],       # depthwise conv
+    [-1, 1, Conv, [128, 1, 1]],         # fuse
+
+    [10, 1, Conv, [256, 1, 1]],         # from C3
+    [-1, 1, DWConv, [256, 3, 1]],       # depthwise
+    [-1, 1, Conv, [256, 1, 1]],         # fuse
+
+    [13, 1, Conv, [256, 1, 1]],         # from C4
+    [-1, 1, DWConv, [256, 3, 1]],       # depthwise
+    [-1, 1, Conv, [256, 1, 1]],         # fuse
+
+    [[16, 19, 22], 1, Detect, [nc, anchors]]
+  ]

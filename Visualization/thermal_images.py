@@ -9,8 +9,11 @@ import time
 from collections import deque
 
 # TRACKING AND VISUALIZATION CONFIG
-FRAME_SIZE = (1280, 1440)
-GRID_SIZE = (32, 24)
+FRAME_SIZE = (320*3//2, 320*3//2)
+GRID_SIZE = (24, 32)
+RING_COORDINATES = [
+    0, 1, 2, 3, 4, 5, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 91, 92, 93, 94, 95, 96, 97, 98, 124, 125, 126, 127, 128, 129, 156, 157, 158, 159, 160, 161, 188, 189, 190, 191, 192, 193, 188, 189, 190, 191, 224, 253, 254, 255, 256, 285, 286, 287, 288, 317, 318, 319, 320, 349, 350, 351, 352, 381, 382, 383, 384, 413, 414, 415, 416, 417, 445, 446, 447, 448, 449, 477, 478, 479, 480, 481, 508, 509, 510, 511, 512, 513, 514, 540, 541, 542, 543, 544, 545, 546, 571, 572, 573, 574, 575, 576, 577, 578, 579, 603, 604, 605, 606, 607, 608, 609, 610, 611, 612, 634, 635, 636, 637, 638, 639, 640, 641, 642, 643, 644, 645, 665, 666, 667, 668, 669, 670, 671, 672, 673, 674, 675, 676, 677, 678, 696, 697, 698, 699, 700, 701, 702, 703, 704, 705, 706, 707, 708, 709, 710, 711, 727, 728, 729, 730, 731, 732, 733, 734, 735, 736, 737, 738, 739, 740, 741, 742, 743, 744, 758, 759, 760, 761, 762, 763, 764, 765, 766, 767
+]
 
 class Visualizer:
     def __init__(self,frame_size=FRAME_SIZE, grid_size=GRID_SIZE, max_history=6):
@@ -78,7 +81,7 @@ class Visualizer:
         # Ensure raw_frame has 768 elements
         if len(raw_frame) != 768:
             print(f"Warning: Raw frame length is {len(raw_frame)} instead of 768.")
-            raw_frame = np.array(raw_frame)
+            raw_frame = np.array(raw_frame) - 0.5
             raw_frame = np.pad(raw_frame, (0, 768 - len(raw_frame)), 'constant', constant_values=0)
         else:
             raw_frame = np.array(raw_frame)
@@ -86,9 +89,18 @@ class Visualizer:
         # Compute subtracted_frame
         subtracted_frame = raw_frame - self.median_frame
         subtracted_frame[subtracted_frame < 0] = 0
+        
+        # Compute ring subtracted_frame
+        ring_subtracted_frame = raw_frame.copy()
+        for index in RING_COORDINATES:
+            if index < len(ring_subtracted_frame):
+                # ring_subtracted_frame[index] -= self.median_frame[index]
+                ring_subtracted_frame[index] -= 2
+        ring_subtracted_frame[ring_subtracted_frame < 0] = 0
+        
 
         # Thresholding
-        threshold_diff_value = 1.3
+        threshold_diff_value = 1.8
         threshold_frame = np.where(subtracted_frame > threshold_diff_value, 1, 0)
         threshold_frame = threshold_frame.astype(np.uint8)
 
@@ -97,11 +109,13 @@ class Visualizer:
         subtracted_frame_img = subtracted_frame.reshape((24, 32))
         threshold_frame_img = threshold_frame.reshape((24, 32))
         median_frame_img = self.median_frame.reshape((24, 32))
+        ring_subtracted_img = ring_subtracted_frame.reshape((24, 32))
 
         # Convert to images
         median_frame_img_disp = self.convert_temperatures_to_image(median_frame_img)
         raw_frame_img_disp = self.convert_temperatures_to_image(raw_frame)
         subtracted_frame_img_disp = self.convert_temperatures_to_image(subtracted_frame_img)
+        ring_subtracted_frame_img_disp = self.convert_temperatures_to_image(ring_subtracted_img)
         # For threshold_frame, since it's binary, multiply by 255 to convert to 0 or 255
         threshold_frame_disp = threshold_frame_img * 255
         threshold_frame_disp = threshold_frame_disp.astype(np.uint8)
@@ -110,6 +124,7 @@ class Visualizer:
         median_frame_img_colored = cv2.applyColorMap(median_frame_img_disp, cv2.COLORMAP_PLASMA)
         raw_frame_img_colored = cv2.applyColorMap(raw_frame_img_disp, cv2.COLORMAP_PLASMA)
         subtracted_frame_img_colored = cv2.applyColorMap(subtracted_frame_img_disp, cv2.COLORMAP_PLASMA)
+        ring_subtracted_frame_img_colored = cv2.applyColorMap(ring_subtracted_frame_img_disp, cv2.COLORMAP_PLASMA)
         threshold_frame_img_colored = cv2.applyColorMap(threshold_frame_disp, cv2.COLORMAP_PLASMA)
 
         # Resize images for display
@@ -117,6 +132,7 @@ class Visualizer:
         median_frame_img_colored = cv2.resize(median_frame_img_colored, size, interpolation=cv2.INTER_NEAREST)
         raw_frame_img_colored = cv2.resize(raw_frame_img_colored, size, interpolation=cv2.INTER_NEAREST)
         subtracted_frame_img_colored = cv2.resize(subtracted_frame_img_colored, size, interpolation=cv2.INTER_NEAREST)
+        ring_subtracted_frame_img_colored = cv2.resize(ring_subtracted_frame_img_colored, size, interpolation=cv2.INTER_NEAREST)
         threshold_frame_img_colored = cv2.resize(threshold_frame_img_colored, size, interpolation=cv2.INTER_NEAREST)
         threshold_frame_resized = cv2.resize(threshold_frame_img, size, interpolation=cv2.INTER_NEAREST)
         # For circles, create a blank image (black background)
@@ -132,35 +148,29 @@ class Visualizer:
         scale_x = size[0] / 32
         scale_y = size[1] / 24
 
-        # Draw bounding boxes on the raw frame image
-        for cnt in contours:
-            # Calculate area to filter small noises, optional
-            area = cv2.contourArea(cnt)
-            if area > 2:  # Adjust as needed based on your data
-                x, y, w, h = cv2.boundingRect(cnt)
-                # Since images were resized, scale the coordinates
-                x_scaled = int(x * scale_x)
-                y_scaled = int(y * scale_y)
-                w_scaled = int(w * scale_x)
-                h_scaled = int(h * scale_y)
-                cv2.rectangle(raw_frame_img_colored, (x_scaled, y_scaled),
-                              (x_scaled + w_scaled, y_scaled + h_scaled), (0, 255, 0), 2)
+        # # Draw bounding boxes on the raw frame image
+        # for cnt in contours:
+        #     # Calculate area to filter small noises, optional
+        #     area = cv2.contourArea(cnt)
+        #     if area > 2:  # Adjust as needed based on your data
+        #         x, y, w, h = cv2.boundingRect(cnt)
+        #         # Since images were resized, scale the coordinates
+        #         x_scaled = int(x * scale_x)
+        #         y_scaled = int(y * scale_y)
+        #         w_scaled = int(w * scale_x)
+        #         h_scaled = int(h * scale_y)
+        #         cv2.rectangle(raw_frame_img_colored, (x_scaled, y_scaled),
+        #                       (x_scaled + w_scaled, y_scaled + h_scaled), (0, 255, 0), 2)
                 
         # # Draw circles on the circle image with higher resolution
-        # for coord in coordinates:
-        #     # Parse the coordinate string into integers
-        #     try:
-        #         x_coord, y_coord = map(int, coord.strip().split(','))
-        #     except ValueError:
-        #         continue  # Skip invalid coordinates
+        for x_coord, y_coord in coordinates:
+            # Scale the coordinates
+            x_scaled = int(x_coord * scale_x)
+            y_scaled = int(y_coord * scale_y)
+            radius_scaled = int(3 * ((scale_x + scale_y)/2))  # Scale radius accordingly
 
-        #     # Scale the coordinates
-        #     x_scaled = int(x_coord * scale_x)
-        #     y_scaled = int(y_coord * scale_y)
-        #     radius_scaled = int(3 * ((scale_x + scale_y)/2))  # Scale radius accordingly
-
-        #     # Draw a filled circle on the circle image
-        #     cv2.circle(circle_frame_img_colored, (x_scaled, y_scaled), radius_scaled, (255, 255, 255), thickness=-1)  # White color
+            # Draw a filled circle on the circle image
+            cv2.circle(circle_frame_img_colored, (x_scaled, y_scaled), radius_scaled, (255, 255, 255), thickness=-1)  # White color
 
         # Display images
         self.history.append(coordinates)
@@ -181,7 +191,7 @@ class Visualizer:
         for i, pts in enumerate(self.history):
             idx_from_newest = (len(self.history) - 1) - i
             intensity = 50 * idx_from_newest
-            radius = max(30, (20 - idx_from_newest * 2)*3)
+            radius = max(5, (20 - idx_from_newest * 2)*3)
             
             for (x, y) in pts:
                 # Scale from grid coordinates to pixel space
@@ -225,13 +235,14 @@ class Visualizer:
         # # Stack them vertically: camera on top, heatmap on bottom.
         # combined = cv2.vconcat([camera_frame, heatmap])
         
-        cv2.imshow("Iot Dots", heatmap)
+        # cv2.imshow("Trailing Dots", heatmap)
         
-        cv2.imshow("Raw Frame with Bounding Boxes", raw_frame_img_colored)
+        cv2.imshow("Raw Frame", raw_frame_img_colored)
         # cv2.imshow("Median Frame", median_frame_img_colored)
-        # cv2.imshow("Subtracted Frame", subtracted_frame_img_colored)
-        # cv2.imshow("Threshold", threshold_frame_img_colored)
-        # cv2.imshow("Circles", circle_frame_img_colored)
+        cv2.imshow("Subtracted Frame", subtracted_frame_img_colored)
+        # cv2.imshow("Ring Subtracted Frame", ring_subtracted_frame_img_colored)
+        cv2.imshow("Threshold", threshold_frame_img_colored)
+        cv2.imshow("Circles", circle_frame_img_colored)
 
         cv2.waitKey(1)
 
@@ -243,8 +254,8 @@ class Visualizer:
 
 
 def main():
-    baud_rate = 250000
-    serial_port = 'COM6'
+    baud_rate = 115200
+    serial_port = '/dev/tty.usbserial-0001'
 
     # Initialize Visualizer
     visualizer = Visualizer()
@@ -258,7 +269,7 @@ def main():
     while True:
         if ser.in_waiting > 0:
             data = ser.read_until(b'\r').decode()
-            print(data)
+            # print(data)
             data_buffer += data
 
             # Check if we have a complete message (ends with '\r')

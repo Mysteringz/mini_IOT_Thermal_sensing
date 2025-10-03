@@ -1,0 +1,35 @@
+# TINYISSIMO YOLO V1
+
+# Parameters
+nc: 2  # number of classes
+# activation: nn.ReLU()
+depth_multiple: 0.33 # model depth multiple
+width_multiple: 0.25 # layer channel multiple
+anchors:
+  - [10, 13, 16, 30, 33, 23]  # P2/4
+  - [30, 61, 62, 45, 59, 119]  # P3/8
+  - [116, 90, 156, 198, 373, 326]  # P4/16
+
+backbone:
+  # [from, number, module, args]
+  [[-1, 1, Conv, [16, 3, 1, 1]],  # 0
+   [-1, 1, nn.MaxPool2d, [2, 2, 0]],  # 3-P2/4
+   [-1, 1, Conv, [16, 3, 1]],
+   [-1, 1, Conv, [16, 3, 1]],  # 0
+   [-1, 1, nn.MaxPool2d, [2, 2, 0]],  # 3-P2/4
+   [-1, 1, Conv, [32, 3, 1]],
+   [-1, 1, Conv, [32, 3, 1]],  # 0
+   [-1, 1, nn.MaxPool2d, [2, 2, 0]],  # 3-P2/4
+   [-1, 1, Conv, [64, 3, 1]],
+   [-1, 1, Conv, [64, 3, 1]],  # 0
+   [-1, 1, nn.MaxPool2d, [2, 2, 0]],  # 3-P2/4
+   [-1, 1, Conv, [64, 3, 1]],
+   [-1, 1, Conv, [128, 3, 1]],  # 0
+   [-1, 1, nn.MaxPool2d, [2, 2, 0]],  # 3-P2/4
+   [-1, 1, Conv, [128, 3, 1]],
+  ]
+
+head: [
+  [-1, 1, Conv, [24, 1, 1]],
+  [-1, 1,  Detect, [nc, anchors]]
+  ]
