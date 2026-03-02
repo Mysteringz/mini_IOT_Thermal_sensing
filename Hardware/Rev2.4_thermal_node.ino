@@ -17,16 +17,25 @@
 #include <esp_now.h>
 using namespace std;
 
+// LED Config
 #include <FastLED.h>
 #define NUM_LEDS 4
 CRGBArray<NUM_LEDS> leds;
-
-// constants won't change. They're used here to set pin numbers:
-const int buttonPin = 39;  // the number of the pushbutton pin
 const int ledPin = LED_BUILTIN;    // the number of the LED pin
 
-// variables will change:
+void led_set(uint8_t hue) {
+    leds[0] = CHSV(hue,255,255);
+    leds[1] = CHSV(hue,255,255);
+    leds[2] = CHSV(hue,255,255);
+    leds[3] = CHSV(hue,255,255);
+}
+uint8_t hue = 0;
+//-----------
+
+//Button Pin Config
+const int buttonPin = 39;  // the number of the pushbutton pin
 int buttonState = 0;  // variable for reading the pushbutton status
+//-----------
 
 // REPLACE WITH THE RECEIVER'S MAC Address
 uint8_t broadcastAddress[] = {0x14, 0x2B, 0x2F, 0xB8, 0xCC, 0x9C};
@@ -247,14 +256,6 @@ void updateHeatmap(const float (&background_median)[HEIGHT][WIDTH]);
 vector<pair<int, int>> findComponentCenters(const float (&thresholdData)[HEIGHT][WIDTH]);
 void dfs(const int x, const int y, const float (&thresholdData)[HEIGHT][WIDTH], bool (&visited)[HEIGHT][WIDTH], vector<pair<int, int> > &component);
 void applyBackgroundSubtraction(const float (&background)[HEIGHT][WIDTH], const float (&input)[HEIGHT][WIDTH], float (&output)[HEIGHT][WIDTH]);
-void led_set(uint8_t hue) {
-  leds[0] = CHSV(hue,255,255);
-  leds[1] = CHSV(hue,255,255);
-  leds[2] = CHSV(hue,255,255);
-  leds[3] = CHSV(hue,255,255);
-}
-
-uint8_t hue = 0;
 
 void setup()
 {
@@ -267,6 +268,7 @@ void setup()
 
 
   if (buttonState == HIGH) {
+      // Uses LoRaWAN Protocol
     led_set(10);
     FastLED.show();
     FastLED.delay(1000);
@@ -327,7 +329,11 @@ void setup()
       }
     });
     server.begin();
-  } else {
+  }
+
+    else { //buttonState = LOW
+        // Uses ESP-NOW Protocol
+
     led_set(150);
     FastLED.show();
     FastLED.delay(1000);
@@ -371,7 +377,9 @@ void setup()
     Serial.println("MLX90640 not detected at default I2C address. Please check wiring. Freezing.");
     while (1);
   }
+
   digitalWrite(LED_BUILTIN, HIGH);
+
   //Get device parameters - We only have to do this once
   int status;
   uint16_t eeMLX90640[832];
@@ -516,6 +524,27 @@ void updateHeatmap(const float (&background_median)[HEIGHT][WIDTH]) {
 
 }
 
+// Apply constant threshold to the background subtracted image
+void applyThreshold(float (&tempData)[HEIGHT][WIDTH])
+{
+    for (int row = 0; row < HEIGHT; row++) {
+        for (int col = 0; col < WIDTH; col++) {
+            tempData[row][col] = (tempData[row][col] > THRESHOLD_DIFF_VALUE ? 1 : 0);
+        }
+    }
+
+    // Uncomment this print function if would like to see the shape of the object
+    //    Serial.println("threshold done");
+    //    for (int i = 0; i < HEIGHT; i++) {
+    //      for (int j = 0; j < WIDTH; j++) {
+    //        Serial.print(tempData[i][j], 2);
+    //        if (i != HEIGHT-1 || j != WIDTH-1) Serial.print(",");
+    //      }
+    //      Serial.println();
+    //    }
+
+}
+
 void readTemperatureData2D(float (&output)[HEIGHT][WIDTH])
 {
 
@@ -587,27 +616,6 @@ void smoothImage(const float (&input)[HEIGHT][WIDTH], float (&output)[HEIGHT][WI
     }
 
 //    Serial.println("smooth done");
-}
-
-// Apply constant threshold to the background subtracted image
-void applyThreshold(float (&tempData)[HEIGHT][WIDTH])
-{
-    for (int row = 0; row < HEIGHT; row++) {
-      for (int col = 0; col < WIDTH; col++) {
-        tempData[row][col] = (tempData[row][col] > THRESHOLD_DIFF_VALUE ? 1 : 0);
-      }
-    }
-
-// Uncomment this print function if would like to see the shape of the object
-//    Serial.println("threshold done");
-//    for (int i = 0; i < HEIGHT; i++) {
-//      for (int j = 0; j < WIDTH; j++) {
-//        Serial.print(tempData[i][j], 2);
-//        if (i != HEIGHT-1 || j != WIDTH-1) Serial.print(",");
-//      }
-//      Serial.println();
-//    }
-
 }
 
 // Add padding of size (KERNEL_SIZE) to facilitate the kernel traversing and dot product at the edge of the frames
@@ -800,7 +808,7 @@ vector<pair<int, int>> findComponentCenters(const float (&thresholdData)[HEIGHT]
 
 
 
-static void prepareTxFrame( uint8_t port )
+static void prepareTxFrame( uint8_t port ) //This function is useless pretty much
 {
   updateHeatmap(background_median);
   Serial.println("packet sent");
