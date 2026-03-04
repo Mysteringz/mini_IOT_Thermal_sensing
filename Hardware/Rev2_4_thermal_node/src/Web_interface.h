@@ -5,6 +5,8 @@
 #ifndef MINI_IOT_THERMAL_SENSING_WEB_INTERFACE_H
 #define MINI_IOT_THERMAL_SENSING_WEB_INTERFACE_H
 
+#include <Arduino.h>
+
 // Website Style
 extern const String style;
 
