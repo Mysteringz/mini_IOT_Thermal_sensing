@@ -8,25 +8,15 @@ Rev2.4_thermal_node.ino is for thermal detection with Wi-Fi and LoRa data sendin
 Requires use of the Heltec WiFi LoRa 32(V3) board, download zip from:
 https://github.com/HelTecAutomation/Heltec_ESP32/tree/master
 
-Move unzipped Heltec folder (Heltec_ESP32-master) into ~/Arduino/libraries
+Move unzipped Heltec folder (Heltec_ESP32-master) into ~/Arduino/libraries  
+
 In Arduino IDE, go to Settings > Additional boards manager URLs: 
 https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
 (make sure nothing else is pasted) and press OK
 
-
-* The Heltec library contains syntax errors, fix the following:
-In sx126x.c:
-	line 9: Change 
-		#include “Arduino.h”
-		To
- 		#include "Arduino.h"
-In sx1262-board.c:
-	line 34:Change 
-		extern void lora_printf(const char *format, …);
-		To
-		extern void lora_printf(const char *format, ...);
-
 Required Installations from Arduino IDE:
+- Adafruit GFX
+- Adafruit BusIO
 - U8g2
 - XPowersLib
 - MKRWAN
@@ -42,3 +32,17 @@ Connect to IP address: 192.168.230.1
 If unable to detect camera, wiggle the camera around and press RST. Repeat until it works.
 
 Change credentials (devEui, AppEUI, and appKey) on line 115 of the .ino file to the credentials extracted from The Things Network. These are specific to your model of ESP32
+
+
+> (Formerly true, no longer necessary, kept in case needed)  
+> The Heltec library contains syntax errors, fix the following:  
+  In sx126x.c:  
+  line 9: Change  
+  #include “Arduino.h”  
+  To  
+  #include "Arduino.h"  
+  In sx1262-board.c:  
+  line 34:Change  
+  extern void lora_printf(const char *format, …);  
+  To  
+  extern void lora_printf(const char *format, ...);  
