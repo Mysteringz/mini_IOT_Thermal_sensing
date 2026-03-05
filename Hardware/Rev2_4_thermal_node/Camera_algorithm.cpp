@@ -259,8 +259,6 @@ void applyBackgroundSubtraction(const float (&background)[HEIGHT][WIDTH], const 
 //    }
 }
 
-void setup() {
-}
 
 // Perform DFS and find the connected component
 void dfs(const int x, const int y, const float (&thresholdData)[HEIGHT][WIDTH], bool (&visited)[HEIGHT][WIDTH], vector<pair<int, int> > &component) {
