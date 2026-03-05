@@ -21,7 +21,7 @@ void updateHeatmap(const float (&background_median)[HEIGHT][WIDTH]) {
 //    Serial.println(centerIndexOfComponents.size());
     appDataSize = 0;
     int appDataSizewifi = 0;
-    appData[appDataSize++] = deviceid;
+    appData[appDataSize++] = *deviceid;
     if (centerIndexOfComponents.size() != 0) {
       for (auto const& component : centerIndexOfComponents) {
           Serial.print(component.first);
@@ -257,6 +257,9 @@ void applyBackgroundSubtraction(const float (&background)[HEIGHT][WIDTH], const 
 //      }
 //      Serial.println();
 //    }
+}
+
+void setup() {
 }
 
 // Perform DFS and find the connected component

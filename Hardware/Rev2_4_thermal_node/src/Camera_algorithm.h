@@ -37,7 +37,7 @@ extern float background_median[HEIGHT][WIDTH];
 extern float temperatureFrames[HEIGHT][WIDTH];
 extern float smoothedData[HEIGHT][WIDTH];
 extern float subtractedFrame[HEIGHT][WIDTH];
-extern char deviceid[20];
+extern unsigned char deviceid[20];
 extern uint8_t appData[100];
 extern int appDataSize;
 

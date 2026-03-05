@@ -60,7 +60,7 @@ struct_message myData;
 esp_now_peer_info_t peerInfo;
 
 // callback when data is sent
-void OnDataSent(const esp_now_send_info_t *info, esp_now_send_status_t status) {
+void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
   Serial.print("\r\nLast Packet Send Status:\t");
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
@@ -159,8 +159,6 @@ uint8_t confirmedNbTrials = 1;
 
 
 //LORA//------------------------------------------------------------------------------------
-
-const uint8_t MLX90640_address = 0x33; //Default 7-bit unshifted address of the MLX90640
 
 float mlx90640To[768];
 paramsMLX90640 mlx90640;

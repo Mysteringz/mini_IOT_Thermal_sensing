@@ -5,7 +5,7 @@
 #include "Web_interface.h"
 
 /* Style */
-String style =
+const String style =
 "<style>#file-input,input{width:100%;height:44px;border-radius:4px;margin:10px auto;font-size:15px}"
 "input{background:#f1f1f1;border:0;padding:0 15px}body{background:#3498db;font-family:sans-serif;font-size:14px;color:#777}"
 "#file-input{padding:0;border:1px solid #ddd;line-height:44px;text-align:left;display:block;cursor:pointer}"
@@ -14,7 +14,7 @@ String style =
 ".btn{background:#3498db;color:#fff;cursor:pointer}</style>";
 
 /* Login page */
-String loginIndex =
+const String loginIndex =
 "<form name=loginForm>"
 "<h1>ESP32 Login</h1>"
 "<input name=userid placeholder='User ID'> "
@@ -30,7 +30,7 @@ String loginIndex =
 "</script>" + style;
 
 /* Server Index Page */
-String serverIndex =
+const String serverIndex =
 "<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>"
 "<form method='POST' action='#' enctype='multipart/form-data' id='upload_form'>"
 "<input type='file' name='update' id='file' onchange='sub(this)' style=display:none>"
