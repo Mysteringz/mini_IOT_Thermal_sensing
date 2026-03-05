@@ -11,6 +11,7 @@
 
 #include "Web_interface.h"
 #include "Camera_algorithm.h"
+#include "Data_packet.h"
 
 #include "LoRaWan_APP.h"
 #include <WiFi.h>
@@ -22,20 +23,7 @@
 
 
 using namespace std;
-
-// LED Config
-#include <FastLED.h>
-#define NUM_LEDS 4
-CRGBArray<NUM_LEDS> leds;
-const int ledPin = LED_BUILTIN;    // the number of the LED pin
-
-void led_set(uint8_t hue) {
-    leds[0] = CHSV(hue,255,255);
-    leds[1] = CHSV(hue,255,255);
-    leds[2] = CHSV(hue,255,255);
-    leds[3] = CHSV(hue,255,255);
-}
-uint8_t hue = 0;
+const int ledPin = LED_BUILTIN;
 //-----------
 
 //Button Pin Config
@@ -46,23 +34,15 @@ int protocolSwitch = 0;  // variable for reading the pushbutton status
 // REPLACE WITH THE RECEIVER'S MAC Address
 uint8_t broadcastAddress[] = {0x14, 0x2B, 0x2F, 0xB8, 0xCC, 0x9C};
 
-// Structure example to send data
-// Must match the receiver structure
-typedef struct struct_message {
-    uint8_t id; // must be unique for each sender board
-    uint8_t coords[200];
-} struct_message;
-
-// Create a struct_message called myData
-struct_message myData;
-
 // Create peer interface
 esp_now_peer_info_t peerInfo;
 
 // callback when data is sent
-void callback(const wifi_tx_info_t *tx_info, esp_now_send_status_t status){
+
+void OnDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {
   Serial.print("\r\nLast Packet Send Status:\t");
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+  
 }
 
 // uint32_t license[4] = {
@@ -227,7 +207,7 @@ void setup()
     });
     server.on("/serverIndex", HTTP_GET, []() {
       server.sendHeader("Connection", "close");
-      server.send(200, "text/html", WebServer_config.serverIndex);
+      server.send(200, "text/html", serverIndex);
     });
     /*handling uploading firmware file */
     server.on("/update", HTTP_POST, []() {
