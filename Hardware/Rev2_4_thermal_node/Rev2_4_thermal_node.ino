@@ -6,11 +6,11 @@
 #include <stack>
 #include <utility>
 
-#include "src/libs/MLX90640_API.h"
-#include "src/libs/MLX90640_I2C_Driver.h"
+#include "MLX90640_API.h"
+#include "MLX90640_I2C_Driver.h"
 
-#include "src/Web_interface.h"
-#include "src/Camera_algorithm.h"
+#include "Web_interface.h"
+#include "Camera_algorithm.h"
 
 #include "LoRaWan_APP.h"
 #include <WiFi.h>
@@ -60,7 +60,7 @@ struct_message myData;
 esp_now_peer_info_t peerInfo;
 
 // callback when data is sent
-void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+void callback(const wifi_tx_info_t *tx_info, esp_now_send_status_t status){
   Serial.print("\r\nLast Packet Send Status:\t");
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
