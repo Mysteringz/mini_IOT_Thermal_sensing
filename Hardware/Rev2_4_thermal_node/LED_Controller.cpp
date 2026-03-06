@@ -13,4 +13,11 @@ void led_set(uint8_t hue) {
     leds[1] = CHSV(hue,255,255);
     leds[2] = CHSV(hue,255,255);
     leds[3] = CHSV(hue,255,255);
+
+    FastLED.show();
+}
+
+void led_init() {
+    FastLED.addLeds<NEOPIXEL,2>(leds, NUM_LEDS);
+    FastLED.setBrightness(255);
 }

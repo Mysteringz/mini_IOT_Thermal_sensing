@@ -33,10 +33,10 @@ void updateHeatmap(const float (&background_median)[HEIGHT][WIDTH]) {
           myData.coords[appDataSizewifi++] = component.second;
           appData[appDataSize++] = component.first;
           appData[appDataSize++] = component.second;
-          led_set(0);
+          led_set(LED_RED);
       }
     } else {
-      led_set(80);
+      led_set(LED_GREEN);
     }
     Serial.println();
     centerIndexOfComponents.clear();

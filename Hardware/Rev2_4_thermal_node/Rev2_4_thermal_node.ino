@@ -26,7 +26,6 @@ const int ledPin = LED_BUILTIN;
 //-----------
 
 //Button Pin Config
-const int hardwareSwitch = 39;  // the number of the pushbutton pin
 int protocolSwitch = 0;  // variable for reading the pushbutton status
 //-----------
 
@@ -57,9 +56,6 @@ void mcu_set_license() {
 }
 
 //LORA//------------------------------------------------------------------------------------
-
-
-
 
 // 70b3d50000000000
 
@@ -118,19 +114,6 @@ uint8_t appPort = 1;
 */
 uint8_t confirmedNbTrials = 1;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 //LORA//------------------------------------------------------------------------------------
 
 float mlx90640To[768];
@@ -158,18 +141,20 @@ void applyBackgroundSubtraction(const float (&background)[HEIGHT][WIDTH], const 
 
 void setup()
 {
-  pinMode(LED_BUILTIN, OUTPUT);
+  // pinMode(LED_BUILTIN, OUTPUT); // Show device is starting
+
+  // the number of the pushbutton pin
+  static const int hardwareSwitch = 39;
   pinMode(hardwareSwitch, INPUT);
   protocolSwitch = digitalRead(hardwareSwitch);
+
+  led_init();
+
   // Connect to WiFi network
-  FastLED.addLeds<NEOPIXEL,2>(leds, NUM_LEDS);
-  FastLED.setBrightness(255);
-
-
   if (protocolSwitch == HIGH) {
       // Uses LoRaWAN Protocol
-    led_set(10);
-    FastLED.show();
+    led_set(LED_YELLOW);
+
     FastLED.delay(1000);
 
     WiFi.begin(ssid, password);
@@ -193,11 +178,10 @@ void setup()
     setupLoRaInterfaceServer();
   }
 
-    else { //protocolSwitch = LOW
-        // Uses ESP-NOW Protocol
+  else { //protocolSwitch = LOW
+    // Uses ESP-NOW Protocol
 
-    led_set(150);
-    FastLED.show();
+    led_set(LED_BLUE);
     FastLED.delay(1000);
     WiFi.mode(WIFI_STA);
       // Init ESP-NOW
@@ -230,8 +214,7 @@ void setup()
   Wire.begin();
   Wire.setClock(400000); //Increase I2C clock speed to 400kHz
 
-  led_set(200);
-  FastLED.show();
+  led_set(LED_PURPLE);
   FastLED.delay(1000);
 
   if (isConnected() == false)
@@ -334,7 +317,6 @@ void loop()
     if (result == ESP_OK) Serial.println("ESP-NOW sent");
     else Serial.println("ESP-NOW send failed");
   }
-  FastLED.show();
   leds.fadeToBlackBy(1);
   FastLED.delay(100);
 }
