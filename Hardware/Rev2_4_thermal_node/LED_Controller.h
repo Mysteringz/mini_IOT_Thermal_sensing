@@ -6,6 +6,7 @@
 #define REV2_4_THERMAL_NODE_LED_CONTROLLER_H
 
 #include <FastLED.h>
+
 #define NUM_LEDS 4
 extern CRGBArray<NUM_LEDS> leds;
 extern uint8_t hue;

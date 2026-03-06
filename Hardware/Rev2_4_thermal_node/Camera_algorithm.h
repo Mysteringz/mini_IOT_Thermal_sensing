@@ -47,9 +47,6 @@ extern uint8_t appDataSize;
 // Data structure for WiFi transmission
 extern struct_message myData;
 
-// LED control function
-void led_set(int brightness);
-
 // MLX90640 functions (these should be declared elsewhere in your code)
 int MLX90640_GetFrameData(uint8_t slaveAddr, uint16_t *frameData);
 float MLX90640_GetVdd(uint16_t *frameData, struct mlx90640 *mlx90640);

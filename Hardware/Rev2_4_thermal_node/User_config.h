@@ -5,6 +5,8 @@
 #ifndef MINI_IOT_THERMAL_SENSING_USER_CONFIG_H
 #define MINI_IOT_THERMAL_SENSING_USER_CONFIG_H
 
-//NEED TO ADD STUFF
+static const char PROGMEM host[] = "iot2";
+static const char PROGMEM ssid[] = "IOT_TEAM_WIFI";
+static const char PROGMEM password[] = "12345678";
 
 #endif //MINI_IOT_THERMAL_SENSING_USER_CONFIG_H

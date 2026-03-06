@@ -4,6 +4,67 @@
 
 #include "Web_interface.h"
 
+#include <WebServer.h>
+#include <ESPmDNS.h>
+#include <Update.h>
+
+namespace {
+WebServer server(80);
+}
+
+bool beginMDNS(const char* host) {
+  if (!MDNS.begin(host)) { // http://esp32.local
+    Serial.println("Error setting up MDNS responder!");
+    return false;
+  }
+  Serial.println("mDNS responder started");
+  return true;
+}
+
+void setupLoRaInterfaceServer()
+{
+	server.on("/", HTTP_GET, []() {
+		server.sendHeader("Connection", "close");
+		server.send(200, "text/html", loginIndex);
+	});
+
+	server.on("/serverIndex", HTTP_GET, []() {
+		server.sendHeader("Connection", "close");
+		server.send(200, "text/html", serverIndex);
+	});
+
+	server.on("/update", HTTP_POST, []() {
+		server.sendHeader("Connection", "close");
+		server.send(200, "text/plain", (Update.hasError()) ? "FAIL" : "OK");
+		ESP.restart();
+	}, []() {
+		HTTPUpload& upload = server.upload();
+		if (upload.status == UPLOAD_FILE_START) {
+			Serial.printf("Update: %s\n", upload.filename.c_str());
+			if (!Update.begin(UPDATE_SIZE_UNKNOWN)) {
+				Update.printError(Serial);
+			}
+		} else if (upload.status == UPLOAD_FILE_WRITE) {
+			if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
+				Update.printError(Serial);
+			}
+		} else if (upload.status == UPLOAD_FILE_END) {
+			if (Update.end(true)) {
+				Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
+			} else {
+				Update.printError(Serial);
+			}
+		}
+	});
+
+	server.begin();
+}
+
+void handleLoRaInterfaceClient()
+{
+	server.handleClient();
+}
+
 /* Style */
 const String style =
 "<style>#file-input,input{width:100%;height:44px;border-radius:4px;margin:10px auto;font-size:15px}"

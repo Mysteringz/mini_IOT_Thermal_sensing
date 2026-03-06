@@ -13,13 +13,11 @@
 #include "Camera_algorithm.h"
 #include "Data_packet.h"
 #include "LED_Controller.h"
+#include "User_config.h"
 
 #include "LoRaWan_APP.h"
 #include <WiFi.h>
 #include <WiFiClient.h>
-#include <WebServer.h>
-#include <ESPmDNS.h>
-#include <Update.h>
 #include <esp_now.h>
 
 
@@ -46,17 +44,17 @@ void OnDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {
   
 }
 
-// uint32_t license[4] = {
-//   0x4156F952,
-//   0xCA95DB5A,
-//   0x2135F10C,
-//   0xEE1EE920
-// };
+void mcu_set_license() {
+  // Not needed for current code
+  uint32_t license[4] = {
+    0x4156F952,
+    0xCA95DB5A,
+    0x2135F10C,
+    0xEE1EE920
+  };
 
-const char* host = "iot2";
-const char* ssid = "IOT_TEAM_WIFI";
-const char* password = "12345678";
-WebServer server(80);
+  Mcu.setlicense(license,sizeof(license)/sizeof(license[0]));
+}
 
 //LORA//------------------------------------------------------------------------------------
 
@@ -187,49 +185,12 @@ void setup()
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
 
-    /*use mdns for host name resolution*/
-    if (!MDNS.begin(host)) { //http://esp32.local
-      Serial.println("Error setting up MDNS responder!");
+    if (!beginMDNS(host)) {
       while (1) {
         delay(1000);
       }
     }
-    Serial.println("mDNS responder started");
-    /*return index page which is stored in serverIndex */
-    server.on("/", HTTP_GET, []() {
-      server.sendHeader("Connection", "close");
-      server.send(200, "text/html", loginIndex);
-    });
-    server.on("/serverIndex", HTTP_GET, []() {
-      server.sendHeader("Connection", "close");
-      server.send(200, "text/html", serverIndex);
-    });
-    /*handling uploading firmware file */
-    server.on("/update", HTTP_POST, []() {
-      server.sendHeader("Connection", "close");
-      server.send(200, "text/plain", (Update.hasError()) ? "FAIL" : "OK");
-      ESP.restart();
-    }, []() {
-      HTTPUpload& upload = server.upload();
-      if (upload.status == UPLOAD_FILE_START) {
-        Serial.printf("Update: %s\n", upload.filename.c_str());
-        if (!Update.begin(UPDATE_SIZE_UNKNOWN)) { //start with max available size
-          Update.printError(Serial);
-        }
-      } else if (upload.status == UPLOAD_FILE_WRITE) {
-        /* flashing firmware to ESP*/
-        if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
-          Update.printError(Serial);
-        }
-      } else if (upload.status == UPLOAD_FILE_END) {
-        if (Update.end(true)) { //true to set the size to the current progress
-          Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
-        } else {
-          Update.printError(Serial);
-        }
-      }
-    });
-    server.begin();
+    setupLoRaInterfaceServer();
   }
 
     else { //protocolSwitch = LOW
@@ -263,7 +224,7 @@ void setup()
 
   Serial.begin(115200); //Fast serial as possible
   while(!Serial);
-  // Mcu.setlicense(license,sizeof(license)/sizeof(license[0]));
+  // mcu_set_license();
   Mcu.begin(HELTEC_BOARD,SLOW_CLK_TPYE);
   pinMode(calcStart, OUTPUT);
   Wire.begin();
@@ -315,7 +276,7 @@ void loop()
 {
   digitalWrite(LED_BUILTIN, HIGH);
   if (protocolSwitch == HIGH) {
-      server.handleClient();
+      handleLoRaInterfaceClient();
       switch( deviceState )
       {
         case DEVICE_STATE_INIT:

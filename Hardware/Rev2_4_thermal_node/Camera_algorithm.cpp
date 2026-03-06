@@ -3,6 +3,7 @@
 //
 
 #include "Camera_algorithm.h"
+#include "LED_Controller.h"
 
 
 void updateHeatmap(const float (&background_median)[HEIGHT][WIDTH]) {
