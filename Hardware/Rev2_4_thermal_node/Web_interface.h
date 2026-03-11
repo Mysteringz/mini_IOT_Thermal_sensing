@@ -20,9 +20,9 @@ extern const String serverIndex;
 bool beginMDNS(const char* host);
 
 // Starts Web Server for LoRaWAN interface
-void setupLoRaInterfaceServer();
+void setupWebServer();
 
 // Process one pending HTTP client request.
-void handleLoRaInterfaceClient();
+void handleWebServer();
 
 #endif //MINI_IOT_THERMAL_SENSING_WEB_INTERFACE_H

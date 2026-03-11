@@ -1,4 +1,5 @@
 #include <heltec.h>
+#include "LoRaWan_APP.h"
 
 #include <Wire.h>
 #include <string>
@@ -15,16 +16,13 @@
 #include "LED_Controller.h"
 #include "User_config.h"
 
-#include "LoRaWan_APP.h"
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <esp_now.h>
 
 
 using namespace std;
-const int ledPin = LED_BUILTIN;
 //-----------
-
 //Button Pin Config
 int protocolSwitch = 0;  // variable for reading the pushbutton status
 //-----------
@@ -43,8 +41,7 @@ void OnDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {
   
 }
 
-void mcu_set_license() {
-  // Not needed for current code
+void mcu_set_license() {   // Not needed for current code
   uint32_t license[4] = {
     0x4156F952,
     0xCA95DB5A,
@@ -55,19 +52,20 @@ void mcu_set_license() {
   Mcu.setlicense(license,sizeof(license)/sizeof(license[0]));
 }
 
+
 //LORA//------------------------------------------------------------------------------------
 
 // 70b3d50000000000
 
 /* OTAA para*/
-uint8_t devEui[8] = {0x70, 0xB3, 0xD5, 0x7E, 0xD0, 0x07, 0x1A, 0x38};
+uint8_t devEui[8] = {0x14, 0x2B, 0x2F, 0xB8, 0xCC, 0x9C, 0xFE, 0xFF};
 uint8_t appEui[8] = {0x70, 0xB3, 0xD5, 0x00, 0x00, 0x00, 0x00, 0x00};
-uint8_t appKey[16] = {0xB0, 0xD8, 0xD8, 0xDF, 0xEF, 0x51, 0xE7, 0x99, 0x99, 0x83, 0x59, 0xA8, 0x6C, 0x7B, 0xD1, 0x72};
+uint8_t appKey[16] = {0xF2, 0xDE, 0x92, 0xDC, 0x9C, 0x66, 0x66, 0x72, 0xF9, 0x6A, 0xEF, 0xFE, 0x3D, 0xAA, 0x1B, 0x08};
 
 // ABP parameters
-uint8_t nwkSKey[16] = { 0x15, 0xb1, 0xd0, 0xef, 0xa4, 0x63, 0xdf, 0xbe, 0x3d, 0x11, 0x18, 0x1e, 0x1e, 0xc7, 0xda, 0x85 };
-uint8_t appSKey[16] = { 0xF2, 0xDE, 0x92, 0xDC, 0x9C, 0x66, 0x66, 0x72, 0xF9, 0x6A, 0xEF, 0xFE, 0x3D, 0xAA, 0x1B, 0x08 };
-uint32_t devAddr = (uint32_t)0x007e6ae1;
+uint8_t nwkSKey[16] = { 0xC1, 0x05, 0x87, 0xEE, 0x97, 0x8C, 0x71, 0x06, 0x0E, 0x7C, 0x22, 0xAF, 0xB4, 0xC9, 0x62, 0xB1 };
+uint8_t appSKey[16] = { 0xD6, 0xD2, 0x0A, 0xE8, 0x69, 0x3C, 0x05, 0x7D, 0xB2, 0x4F, 0x5F, 0x9F, 0x08, 0xE4, 0x0E, 0xF2 };
+uint32_t devAddr = (uint32_t)0x260DD1A8;
 
 /*LoraWan channelsmask, default channels 0-7*/ 
 uint16_t userChannelsMask[6]={ 0x00FF,0x0000,0x0000,0x0000,0x0000,0x0000 };
@@ -129,19 +127,12 @@ float temperatureFrames[HEIGHT][WIDTH] = {0};
 float smoothedData[HEIGHT][WIDTH] = {0};
 float subtractedFrame[HEIGHT][WIDTH] = {0};
 
-void readTemperatureData2D(float (&output)[HEIGHT][WIDTH]);
-void smoothImage(const float (&input)[HEIGHT][WIDTH], float (&output)[HEIGHT][WIDTH]);
-void applyThreshold(float (&tempData)[HEIGHT][WIDTH]);
-vector<vector<float>> createPaddedArray(const float (&input)[HEIGHT][WIDTH]);
-void backgroundEstimation();
-void updateHeatmap(const float (&background_median)[HEIGHT][WIDTH]);
-vector<pair<int, int>> findComponentCenters(const float (&thresholdData)[HEIGHT][WIDTH]);
-void dfs(const int x, const int y, const float (&thresholdData)[HEIGHT][WIDTH], bool (&visited)[HEIGHT][WIDTH], vector<pair<int, int> > &component);
-void applyBackgroundSubtraction(const float (&background)[HEIGHT][WIDTH], const float (&input)[HEIGHT][WIDTH], float (&output)[HEIGHT][WIDTH]);
-
 void setup()
 {
-  // pinMode(LED_BUILTIN, OUTPUT); // Show device is starting
+  pinMode(LED_BUILTIN, OUTPUT); // Show device is starting
+  Serial.begin(115200); // Fast serial as possible
+  while(!Serial); // Busy wait until serial port ready
+  Serial.println("Device starting");
 
   // the number of the pushbutton pin
   static const int hardwareSwitch = 39;
@@ -151,14 +142,15 @@ void setup()
   led_init();
 
   // Connect to WiFi network
-  if (protocolSwitch == HIGH) {
+  if ((protocolSwitch == LOW) ||  (ACTIVATE_SERVER)) {
+    Serial.println("Starting WiFi connection");
       // Uses LoRaWAN Protocol
     led_set(LED_YELLOW);
 
     FastLED.delay(1000);
 
     WiFi.begin(ssid, password);
-    Serial.println("");
+    Serial.print("WiFi connecting");
 
     // Wait for connection
     while (WiFi.status() != WL_CONNECTED) {
@@ -169,16 +161,22 @@ void setup()
     Serial.println(ssid);
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
+  }
 
+  if (ACTIVATE_SERVER) {
+    Serial.println("Debugging server selected");
     if (!beginMDNS(host)) {
       while (1) {
         delay(1000);
       }
     }
-    setupLoRaInterfaceServer();
+    setupWebServer();
   }
+  
 
-  else { //protocolSwitch = LOW
+  if (protocolSwitch == LOW) {
+    Serial.println("ESP-NOW Protocol Selected");
+    Serial.println("Please reset after changing protocol mode");
     // Uses ESP-NOW Protocol
 
     led_set(LED_BLUE);
@@ -193,7 +191,7 @@ void setup()
     // Once ESPNow is successfully Init, we will register for Send CB to
     // get the status of Trasnmitted packet
     esp_now_register_send_cb(OnDataSent);
-    
+
     // Register peer
     memcpy(peerInfo.peer_addr, broadcastAddress, 6);
     peerInfo.channel = 0;  
@@ -206,8 +204,6 @@ void setup()
     }
   }
 
-  Serial.begin(115200); //Fast serial as possible
-  while(!Serial);
   // mcu_set_license();
   Mcu.begin(HELTEC_BOARD,SLOW_CLK_TPYE);
   pinMode(calcStart, OUTPUT);
@@ -222,6 +218,7 @@ void setup()
     Serial.println("MLX90640 not detected at default I2C address. Please check wiring. Freezing.");
     while (1);
   }
+  else {Serial.println("MLX90640 detected, starting");}
 
   digitalWrite(LED_BUILTIN, HIGH);
 
@@ -258,53 +255,60 @@ void setup()
 void loop()
 {
   digitalWrite(LED_BUILTIN, HIGH);
-  if (protocolSwitch == HIGH) {
-      handleLoRaInterfaceClient();
-      switch( deviceState )
+  if (ACTIVATE_SERVER) {
+    handleWebServer();
+  }
+
+  if (protocolSwitch == HIGH){ // LoRaWAN Mode
+    switch( deviceState )
+    {
+      case DEVICE_STATE_INIT:
       {
-        case DEVICE_STATE_INIT:
-        {
-    #if(LORAWAN_DEVEUI_AUTO)
-          LoRaWAN.generateDeveuiByChipID();
-    #endif
-          LoRaWAN.init(loraWanClass,loraWanRegion);
-          //both set join DR and DR when ADR off 
-          LoRaWAN.setDefaultDR(3);
-          break;
-        }
-        case DEVICE_STATE_JOIN:
-        {
-          LoRaWAN.join();
-          break;
-        }
-        case DEVICE_STATE_SEND:
-        {
-          digitalWrite(LED_BUILTIN, LOW);
-          prepareTxFrame( appPort );
-          LoRaWAN.send();
-          deviceState = DEVICE_STATE_CYCLE;
-          break;
-        }
-        case DEVICE_STATE_CYCLE:
-        {
-          // Schedule next packet transmission
-          txDutyCycleTime = appTxDutyCycle;
-          LoRaWAN.cycle(txDutyCycleTime);
-          deviceState = DEVICE_STATE_SLEEP;
-          break;
-        }
-        case DEVICE_STATE_SLEEP:
-        {
-          LoRaWAN.sleep(loraWanClass);
-          break;
-        }
-        default:
-        {
-          deviceState = DEVICE_STATE_INIT;
-          break;
-        }
+  #if(LORAWAN_DEVEUI_AUTO)
+        LoRaWAN.generateDeveuiByChipID();
+  #endif
+        LoRaWAN.init(loraWanClass,loraWanRegion);
+        //both set join DR and DR when ADR off
+        LoRaWAN.setDefaultDR(3);
+        break;
       }
-  } else {
+      case DEVICE_STATE_JOIN:
+      {
+        LoRaWAN.join();
+        break;
+      }
+      case DEVICE_STATE_SEND:
+      {
+        digitalWrite(LED_BUILTIN, LOW);
+        prepareTxFrame( appPort );
+
+        LoRaWAN.send();
+        deviceState = DEVICE_STATE_CYCLE;
+        break;
+      }
+      case DEVICE_STATE_CYCLE:
+      {
+        // Schedule next packet transmission
+        txDutyCycleTime = appTxDutyCycle;
+        LoRaWAN.cycle(txDutyCycleTime);
+        deviceState = DEVICE_STATE_SLEEP;
+        break;
+      }
+      case DEVICE_STATE_SLEEP:
+      {
+        LoRaWAN.sleep(loraWanClass);
+        break;
+      }
+      default:
+      {
+        deviceState = DEVICE_STATE_INIT;
+        break;
+      }
+    }
+  }
+
+if (protocolSwitch == LOW)
+  {
     Serial.println("Sending via ESP-NOW...");
     int count_clear = 0;
     while (myData.coords[count_clear] != '\0') {
@@ -317,6 +321,7 @@ void loop()
     if (result == ESP_OK) Serial.println("ESP-NOW sent");
     else Serial.println("ESP-NOW send failed");
   }
+  
   leds.fadeToBlackBy(1);
   FastLED.delay(100);
 }
@@ -330,8 +335,9 @@ boolean isConnected()
   return (true);
 }
 
-static void prepareTxFrame( uint8_t port ) //This function is useless pretty much
+static void prepareTxFrame( uint8_t port )
 {
   updateHeatmap(background_median);
   Serial.println("packet sent");
+  // Function decorator applied in source code to prepareTxFrame()
 }

@@ -53,18 +53,15 @@ float MLX90640_GetVdd(uint16_t *frameData, struct mlx90640 *mlx90640);
 float MLX90640_GetTa(uint16_t *frameData, struct mlx90640 *mlx90640);
 void MLX90640_CalculateTo(uint16_t *frameData, struct mlx90640 *mlx90640, float emissivity, float tr, float *result);
 
-// Core algorithm functions
-void updateHeatmap(const float (&background_median)[HEIGHT][WIDTH]);
-void backgroundEstimation();
 void readTemperatureData2D(float (&output)[HEIGHT][WIDTH]);
 void smoothImage(const float (&input)[HEIGHT][WIDTH], float (&output)[HEIGHT][WIDTH]);
-vector<vector<float>> createPaddedArray(const float (&input)[HEIGHT][WIDTH]);
-void applyBackgroundSubtraction(const float (&background)[HEIGHT][WIDTH], const float (&input)[HEIGHT][WIDTH], float (&output)[HEIGHT][WIDTH]);
 void applyThreshold(float (&tempData)[HEIGHT][WIDTH]);
-
-// Connected component functions
+vector<vector<float>> createPaddedArray(const float (&input)[HEIGHT][WIDTH]);
+void backgroundEstimation();
+void updateHeatmap(const float (&background_median)[HEIGHT][WIDTH]);
 vector<pair<int, int>> findComponentCenters(const float (&thresholdData)[HEIGHT][WIDTH]);
 void dfs(const int x, const int y, const float (&thresholdData)[HEIGHT][WIDTH], bool (&visited)[HEIGHT][WIDTH], vector<pair<int, int> > &component);
+void applyBackgroundSubtraction(const float (&background)[HEIGHT][WIDTH], const float (&input)[HEIGHT][WIDTH], float (&output)[HEIGHT][WIDTH]);
 
 
 #endif //MINI_IOT_THERMAL_SENSING_CAMERA_ALGORITHM_H

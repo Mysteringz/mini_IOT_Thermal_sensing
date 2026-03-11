@@ -12,6 +12,10 @@ namespace {
 WebServer server(80);
 }
 
+
+// For debugging purposes, only exists so I can check each individual node
+// need to remove in deployment for sleeping
+
 bool beginMDNS(const char* host) {
   if (!MDNS.begin(host)) { // http://esp32.local
     Serial.println("Error setting up MDNS responder!");
@@ -21,7 +25,7 @@ bool beginMDNS(const char* host) {
   return true;
 }
 
-void setupLoRaInterfaceServer()
+void setupWebServer()
 {
 	server.on("/", HTTP_GET, []() {
 		server.sendHeader("Connection", "close");
@@ -60,7 +64,7 @@ void setupLoRaInterfaceServer()
 	server.begin();
 }
 
-void handleLoRaInterfaceClient()
+void handleWebServer()
 {
 	server.handleClient();
 }

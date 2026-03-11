@@ -4,6 +4,8 @@
 
 #include "LED_Controller.h"
 
+#include <HardwareSerial.h>
+
 CRGBArray<NUM_LEDS> leds;
 
 uint8_t hue = 0;
@@ -18,6 +20,7 @@ void led_set(uint8_t hue) {
 }
 
 void led_init() {
+    Serial.println("LED Initializing");
     FastLED.addLeds<NEOPIXEL,2>(leds, NUM_LEDS);
     FastLED.setBrightness(255);
 }
