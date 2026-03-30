@@ -7,7 +7,8 @@
 
 #include <FastLED.h>
 
-#define NUM_LEDS 4
+#define NUM_LEDS 1
+#define LED_INPUT_PIN 2
 
 #define LED_RED 0
 #define LED_ORANGE 32

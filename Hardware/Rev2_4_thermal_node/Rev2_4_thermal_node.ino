@@ -55,17 +55,14 @@ void mcu_set_license() {   // Not needed for current code
 
 //LORA//------------------------------------------------------------------------------------
 
-// 70b3d50000000000
-
-/* OTAA para*/
-uint8_t devEui[8] = {0x14, 0x2B, 0x2F, 0xB8, 0xCC, 0x9C, 0xFE, 0xFF};
-uint8_t appEui[8] = {0x70, 0xB3, 0xD5, 0x00, 0x00, 0x00, 0x00, 0x00};
-uint8_t appKey[16] = {0xF2, 0xDE, 0x92, 0xDC, 0x9C, 0x66, 0x66, 0x72, 0xF9, 0x6A, 0xEF, 0xFE, 0x3D, 0xAA, 0x1B, 0x08};
+uint8_t devEui[] = DEV_EUI;
+uint8_t appEui[] = APP_EUI;
+uint8_t appKey[] = APP_KEY;
 
 // ABP parameters
-uint8_t nwkSKey[16] = { 0xC1, 0x05, 0x87, 0xEE, 0x97, 0x8C, 0x71, 0x06, 0x0E, 0x7C, 0x22, 0xAF, 0xB4, 0xC9, 0x62, 0xB1 };
-uint8_t appSKey[16] = { 0xD6, 0xD2, 0x0A, 0xE8, 0x69, 0x3C, 0x05, 0x7D, 0xB2, 0x4F, 0x5F, 0x9F, 0x08, 0xE4, 0x0E, 0xF2 };
-uint32_t devAddr = (uint32_t)0x260DD1A8;
+uint8_t nwkSKey[] = NWKS_KEY;
+uint8_t appSKey[] = APPS_KEY;
+uint32_t devAddr = DEV_ADDR;
 
 /*LoraWan channelsmask, default channels 0-7*/ 
 uint16_t userChannelsMask[6]={ 0x00FF,0x0000,0x0000,0x0000,0x0000,0x0000 };
@@ -77,19 +74,19 @@ LoRaMacRegion_t loraWanRegion = ACTIVE_REGION;
 DeviceClass_t  loraWanClass = CLASS_C;
 
 /*the application data transmission duty cycle.  value in [ms].*/
-uint32_t appTxDutyCycle = 500;
+uint32_t appTxDutyCycle = 15000;
 
 /*OTAA or ABP*/
 bool overTheAirActivation = true;
 
 /*ADR enable*/
-bool loraWanAdr = false;
+bool loraWanAdr = true;
 
 /* Indicates if the node is sending confirmed or unconfirmed messages */
 bool isTxConfirmed = true;
 
 /* Application port */
-uint8_t appPort = 1;
+uint8_t appPort = 2;
 /*!
 * Number of trials to transmit the frame, if the LoRaMAC layer did not
 * receive an acknowledgment. The MAC performs a datarate adaptation,
@@ -110,7 +107,7 @@ uint8_t appPort = 1;
 * Note, that if NbTrials is set to 1 or 2, the MAC will not decrease
 * the datarate, in case the LoRaMAC layer did not receive an acknowledgment
 */
-uint8_t confirmedNbTrials = 1;
+uint8_t confirmedNbTrials = 4;
 
 //LORA//------------------------------------------------------------------------------------
 
@@ -131,8 +128,10 @@ void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT); // Show device is starting
   Serial.begin(115200); // Fast serial as possible
-  while(!Serial); // Busy wait until serial port ready
+  delay(1000); // Wait for serial to start
   Serial.println("Device starting");
+  Wire.begin();
+  Wire.setClock(400000); //Increase I2C clock speed to 400kHz
 
   // the number of the pushbutton pin
   static const int hardwareSwitch = 39;
@@ -204,62 +203,60 @@ void setup()
     }
   }
 
-  // mcu_set_license();
+  // // mcu_set_license();
   Mcu.begin(HELTEC_BOARD,SLOW_CLK_TPYE);
-  pinMode(calcStart, OUTPUT);
-  Wire.begin();
-  Wire.setClock(400000); //Increase I2C clock speed to 400kHz
+  // pinMode(calcStart, OUTPUT);
 
-  led_set(LED_PURPLE);
-  FastLED.delay(1000);
+  // if (isConnected() == false)
+  // {
+  //   Serial.println("MLX90640 not detected at default I2C address. Please check wiring. Freezing.");
+  //   while (1);
+  // }
+  // else {Serial.println("MLX90640 detected, starting");}
 
-  if (isConnected() == false)
-  {
-    Serial.println("MLX90640 not detected at default I2C address. Please check wiring. Freezing.");
-    while (1);
-  }
-  else {Serial.println("MLX90640 detected, starting");}
+  // digitalWrite(LED_BUILTIN, HIGH);
 
-  digitalWrite(LED_BUILTIN, HIGH);
+  // //Get device parameters - We only have to do this once
+  // int status;
+  // uint16_t eeMLX90640[832];
+  // status = MLX90640_DumpEE(MLX90640_address, eeMLX90640);
+  // if (status != 0)
+  //   Serial.println("Failed to load system parameters");
 
-  //Get device parameters - We only have to do this once
-  int status;
-  uint16_t eeMLX90640[832];
-  status = MLX90640_DumpEE(MLX90640_address, eeMLX90640);
-  if (status != 0)
-    Serial.println("Failed to load system parameters");
+  // status = MLX90640_ExtractParameters(eeMLX90640, &mlx90640);
+  // if (status != 0)
+  //   Serial.println("Parameter extraction failed");
 
-  status = MLX90640_ExtractParameters(eeMLX90640, &mlx90640);
-  if (status != 0)
-    Serial.println("Parameter extraction failed");
+  // //Once params are extracted, we can release eeMLX90640 array
 
-  //Once params are extracted, we can release eeMLX90640 array
-
-  //Set refresh rate
-  //A rate of 0.5Hz takes 4Sec per reading because we have to read two frames to get complete picture
-  //MLX90640_SetRefreshRate(MLX90640_address, 0x00); //Set rate to 0.25Hz effective - Works
-  //MLX90640_SetRefreshRate(MLX90640_address, 0x01); //Set rate to 0.5Hz effective - Works
-  MLX90640_SetRefreshRate(MLX90640_address, 0x02); //Set rate to 1Hz effective - Works
-  //MLX90640_SetRefreshRate(MLX90640_address, 0x03); //Set rate to 2Hz effective - Works
-  //MLX90640_SetRefreshRate(MLX90640_address, 0x04); //Set rate to 4Hz effective - Works
-  //MLX90640_SetRefreshRate(MLX90640_address, 0x05); //Set rate to 8Hz effective - Works at 800kHz
-  //MLX90640_SetRefreshRate(MLX90640_address, 0x06); //Set rate to 16Hz effective - Works at 800kHz
-  //MLX90640_SetRefreshRate(MLX90640_address, 0x07); //Set rate to 32Hz effective - fails
+  // //Set refresh rate
+  // //A rate of 0.5Hz takes 4Sec per reading because we have to read two frames to get complete picture
+  // //MLX90640_SetRefreshRate(MLX90640_address, 0x00); //Set rate to 0.25Hz effective - Works
+  // //MLX90640_SetRefreshRate(MLX90640_address, 0x01); //Set rate to 0.5Hz effective - Works
+  // MLX90640_SetRefreshRate(MLX90640_address, 0x02); //Set rate to 1Hz effective - Works
+  // //MLX90640_SetRefreshRate(MLX90640_address, 0x03); //Set rate to 2Hz effective - Works
+  // //MLX90640_SetRefreshRate(MLX90640_address, 0x04); //Set rate to 4Hz effective - Works
+  // //MLX90640_SetRefreshRate(MLX90640_address, 0x05); //Set rate to 8Hz effective - Works at 800kHz
+  // //MLX90640_SetRefreshRate(MLX90640_address, 0x06); //Set rate to 16Hz effective - Works at 800kHz
+  // //MLX90640_SetRefreshRate(MLX90640_address, 0x07); //Set rate to 32Hz effective - fails
 
   //Once EEPROM has been read at 400kHz we can increase to 1MHz
   Wire.setClock(1000000); //Teensy will now run I2C at 800kHz (because of clock division)
-
-  backgroundEstimation();
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(5000);
+  // backgroundEstimation();
 }
 
 void loop()
 {
   digitalWrite(LED_BUILTIN, HIGH);
+
   if (ACTIVATE_SERVER) {
     handleWebServer();
   }
 
   if (protocolSwitch == HIGH){ // LoRaWAN Mode
+  {
     switch( deviceState )
     {
       case DEVICE_STATE_INIT:
@@ -268,7 +265,7 @@ void loop()
         LoRaWAN.generateDeveuiByChipID();
   #endif
         LoRaWAN.init(loraWanClass,loraWanRegion);
-        //both set join DR and DR when ADR off
+        //both set join DR and DR when ADR off 
         LoRaWAN.setDefaultDR(3);
         break;
       }
@@ -279,9 +276,7 @@ void loop()
       }
       case DEVICE_STATE_SEND:
       {
-        digitalWrite(LED_BUILTIN, LOW);
         prepareTxFrame( appPort );
-
         LoRaWAN.send();
         deviceState = DEVICE_STATE_CYCLE;
         break;
@@ -289,7 +284,7 @@ void loop()
       case DEVICE_STATE_CYCLE:
       {
         // Schedule next packet transmission
-        txDutyCycleTime = appTxDutyCycle;
+        txDutyCycleTime = appTxDutyCycle + randr( -APP_TX_DUTYCYCLE_RND, APP_TX_DUTYCYCLE_RND );
         LoRaWAN.cycle(txDutyCycleTime);
         deviceState = DEVICE_STATE_SLEEP;
         break;
@@ -306,6 +301,7 @@ void loop()
       }
     }
   }
+}
 
 if (protocolSwitch == LOW)
   {
@@ -335,9 +331,16 @@ boolean isConnected()
   return (true);
 }
 
-static void prepareTxFrame( uint8_t port )
+static void prepareTxFrame( uint8_t port ) // Specified signature for LoRaWAN
 {
-  updateHeatmap(background_median);
+  (void) port; // Suppress warning
+  // updateHeatmap(background_median);
+
+  appDataSize = 4;
+  appData[0] = 0x00;
+  appData[1] = 0x01;
+  appData[2] = 0x02;
+  appData[3] = 0x03;
+
   Serial.println("packet sent");
-  // Function decorator applied in source code to prepareTxFrame()
 }
