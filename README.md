@@ -4,6 +4,8 @@ CrowdAware is a privacy-aware crowd monitoring prototype that uses low-resolutio
 
 Instead of using RGB video, each node detects moving heat blobs, estimates person centroids, and transmits compact telemetry to a central receiver for live visualization and analytics.
 
+<img width="1600" height="900" alt="image" src="https://github.com/user-attachments/assets/7c9d6b75-78b4-48d1-979c-934fc15a0aff" />
+
 ## Why this project
 
 Conventional crowd monitoring systems often trade privacy for visibility. CrowdAware is designed to keep personally identifying information out of the data path while still enabling:
