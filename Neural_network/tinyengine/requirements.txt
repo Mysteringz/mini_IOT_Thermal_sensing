@@ -1,6 +1,0 @@
-flatbuffers
-matplotlib
-numpy
-torch
-torchvision
-tqdm
