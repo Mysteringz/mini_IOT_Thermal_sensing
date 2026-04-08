@@ -682,7 +682,7 @@
           "group_by": false,
           "label": "Mouser No.",
           "name": "Mouser No.",
-          "show": false
+          "show": true
         }
       ],
       "filter_string": "",
