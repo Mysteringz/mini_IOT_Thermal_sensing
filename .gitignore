@@ -47,3 +47,8 @@ fp-info-cache
 
 # Local project settings
 *.kicad_prl
+
+# .history folder
+*\.history
+PCB/.history
+.history/
